@@ -12,30 +12,39 @@ body {
 	position: absolute;
 }
 
+.offline .body {
+	opacity: .4;
+}
+
 form {
     width: 50%;
     max-width: 500px;
     background: white;
     margin-top: 50px;
-    border: 3px solid #EEE;
+    border: 3px solid #F93;
     border-radius: 10px;
     text-align: left;
 }
 
 header {
-	background: #F6F6F6;
+	background: #E70;
+	border-radius: 5px 5px 0 0;
 }
 
-header, .body {
+header, footer, .body {
 	padding: 20px;
 }
 
+.body {
+	padding-bottom: 0;
+}
+
 h2 {
-	color: #333;
+	color: white;
 }
 
 h4 {
-	color: #555;
+	color: #EEE;
 }
 
 h2, h4 {
@@ -64,7 +73,7 @@ label, input, .body > button {
 	border-radius: 5px;
 	outline: 0;
 	box-sizing: border-box;
-	border: 3px solid #EEE;
+	border: 3px solid #DDD;
 	padding: 5px 10px;
 	font-weight: bold;
 	font-size: 18px;
@@ -77,8 +86,9 @@ label {
 }
 
 select {
-	padding: 5px;
+	padding: 10px 5px;
 	border-radius: 3px;
+	border: 3px solid #DDD;
 }
 
 fieldset {
@@ -99,9 +109,28 @@ fieldset {
 }
 
 .error {
-	color: #C00;
+	color: #C33;
 }
 
 .success {
-	color: #0C0;
+	color: #3C3;
+}
+
+.hours-showcase {
+	display: flex;
+	margin-bottom: 10px;
+}
+
+.hours-showcase div {
+	flex-grow: 1;
+	height: 50px;
+	border-radius: 3px;
+	border: 1px solid white;
+	background: white;
+	box-shadow: inset 0 0 0 2px #DDD;
+}
+
+.hours-showcase div.unavailable {
+	background: #3C3;
+	box-shadow: none;
 }
