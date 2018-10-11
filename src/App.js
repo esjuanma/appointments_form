@@ -17,10 +17,10 @@ class App extends Component {
 			date.setHours(0, 0, 0, 0);
 			return date;
 		})(),
-		name: '', // Needed to avoid "uncontrolled" error on input
+		name: '',
 		dateSetted: false,
-		scheduleFrom: '-',
-		scheduleTo: '-'
+		scheduleFrom: '',
+		scheduleTo: ''
 	}
 
 	// Sets initial state
@@ -50,8 +50,8 @@ class App extends Component {
 		this.setState({
 			date,
 			dateSetted: true,
-			scheduleFrom: '-',
-			scheduleTo: '-'
+			scheduleFrom: '',
+			scheduleTo: ''
 		});
 		this.hideCalendar();
 	}
@@ -89,19 +89,10 @@ class App extends Component {
 
 		const day = date.valueOf();
 
-		// Check if there is already any appointment to the date
-		if (schedules[day]) {
-			// Check if there is an overlapping (note that with the improvement this won't be happening anymore, but let's leave this just in case)
-			for (let i = scheduleFrom; i < scheduleTo; i++) {
-				if (schedules[day][i]) { // This shouldn't happen now; but it could happen if another user has made any change!
-					return this.setError(`This schedule isn't available; ${schedules[day][i]} already took ${('0' + i).substr(-2)}:00`);
-				}
-			}
-		} else {
-			schedules[day] = Array(24).fill(null);
-		}
-
-		// Clean previous error (if any)
+		// Creates schedule array for the selected day if empty
+		schedules[day] = schedules[day] || Array(24).fill(null);
+		
+		// Cleans previous error (if any)
 		this.clearError();
 
 		// Fills day array
@@ -153,11 +144,8 @@ class App extends Component {
 		this.setState({ error });
 	}
 
-	getHoursQuantity() {
-		// Get configuration
-		const { from: hours_from, to: hours_to } = this.schedule;
-		// Get how many options will be available
-		return hours_to - hours_from;
+	getSelectableHoursQuantity() {
+		return this.schedule.to - this.schedule.from;
 	}
 
 	toAmPm(hour) {
@@ -174,8 +162,10 @@ class App extends Component {
 		const { dateSetted, date, schedules } = this.state;
 		// Get scheduled hours (if any)
 		const alreadyScheduled = dateSetted && schedules[date.valueOf()] || [];
+		// Generates an array for the options
+		const optionsArray = Array(this.getSelectableHoursQuantity()).fill(null);
 
-		return Array(this.getHoursQuantity()).fill(null).map((n, hour) => {
+		return optionsArray.map((n, hour) => {
 			// Move hour to fit range
 			hour = hours_from + hour;
 
@@ -196,6 +186,30 @@ class App extends Component {
 		return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
 	}
 
+	hoursShowCase(todaySchedule) {
+		const { from } = this.schedule;
+		
+		const hourBlockTitle = (hour) => {
+			return `${hour.hour}:00 ${hour.ampm}. ${unavailable ? 'Sorry, unavailable' : 'Available!'}`;
+		};
+
+		const hourBlock = (hour, unavailable) => {
+			return <div title={hourBlockTitle(this.toAmPm(hour))} key={'block' + hour} className={unavailable && 'unavailable'}></div>;
+		}
+
+		const hoursArray = Array(this.getHoursQuantity()).fill(null);
+		
+		return (
+			<div className="hours-showcase">{
+				hoursArray.map((n, hour) => {
+					hour += from;
+					const unavailable = todaySchedule && todaySchedule[hour];
+					return hourBlock(hour, unavailable);
+				})
+			}</div>
+		);
+	}
+
 	render() {
 		const optionsFrom = this.getHourlyOptions();
 		const optionsTo = this.getHourlyOptions(true);
@@ -212,7 +226,7 @@ class App extends Component {
 			offline
 		} = this.state;
 
-		const todaySchedule = schedules[date.valueOf()] || [];
+		const todaySchedule = schedules[date.valueOf()];
 
 		return (
 			<div className={`App ${(offline ? 'offline' : '')}`}>
@@ -241,18 +255,7 @@ class App extends Component {
 							}
 						</fieldset>
 							
-						{dateSetted &&
-							<div className="hours-showcase">{
-								Array(this.getHoursQuantity()).fill(null).map((n, hour) => {
-									hour += this.schedule.from;
-									const unavailable = todaySchedule[hour];
-									const title = ((hour) => {
-										return `${hour.hour}:00 ${hour.ampm}. ${unavailable ? 'Sorry, unavailable' : 'Available!'}`;
-									})(this.toAmPm(hour));
-									return <div title={title} key={'block' + hour} className={unavailable && 'unavailable'}></div>;
-								})
-							}</div>
-						}
+						{dateSetted && this.hoursShowCase(todaySchedule)}
 
 						<fieldset>
 							<label>And now select a time range:</label>
